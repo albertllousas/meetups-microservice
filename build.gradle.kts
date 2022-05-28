@@ -14,6 +14,9 @@ object Versions {
     const val FAKER = "1.0.2"
     const val QUARKUS = "2.9.1.Final"
     const val REST_ASSURED = "5.0.1"
+    const val TESTCONTAINERS = "1.17.2"
+    const val FLYWAY = "8.5.11"
+    const val POSTGRES = "42.2.23"
 }
 repositories {
     google()
@@ -30,6 +33,11 @@ dependencies {
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-config-yaml")
+    implementation("io.quarkus:quarkus-agroal")
+    implementation("io.quarkus:quarkus-narayana-jta")
+    implementation("org.jdbi:jdbi3-core:3.29.0")
+    implementation("org.postgresql:postgresql:${Versions.POSTGRES}")
+    implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
 
     testImplementation(group= "com.github.javafaker", name= "javafaker", version= Versions.FAKER) {
         exclude(group = "org.yaml")
@@ -40,6 +48,9 @@ dependencies {
     testImplementation(group = "org.assertj", name = "assertj-core", version = Versions.ASSERTJ)
     testImplementation("io.quarkus:quarkus-junit5:${Versions.QUARKUS}")
     testImplementation("io.rest-assured:rest-assured:${Versions.REST_ASSURED}")
+    testImplementation(group =  "org.testcontainers", name = "testcontainers", version = Versions.TESTCONTAINERS)
+    testImplementation(group =  "org.testcontainers", name = "kafka", version = Versions.TESTCONTAINERS)
+    testImplementation("org.testcontainers:postgresql:${Versions.TESTCONTAINERS}")
 }
 
 tasks.apply {
