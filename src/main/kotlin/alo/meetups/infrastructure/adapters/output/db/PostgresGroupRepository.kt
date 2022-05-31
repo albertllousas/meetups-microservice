@@ -28,31 +28,18 @@ class PostgresGroupRepository(private val jdbi: Jdbi) : GroupRepository {
                 .toEither(ifEmpty = { GroupNotFound })
         }
 
-    private fun ResultSet.asGroup() =
-        Group.reconstitute(
-            groupId = GroupId(UUID.fromString(getString("id"))),
-            title = Title.reconstitute(getString("title")),
-            members = this.getArray("members")?.let {
-                (it.array as Array<UUID>).map(::UserId).toSet()
-            } ?: emptySet(),
-            meetups = this.getArray("meetups")?.let {
-                (it.array as Array<UUID>).map(::MeetupId).toSet()
-            } ?: emptySet()
-        )
-
-
     override fun create(group: Group): Either<GroupAlreadyExists, Group> = try {
         jdbi.open().use { handle ->
             handle.execute(
                 """ INSERT INTO groups (id, title, members, meetups) VALUES (?,?,?,?) """,
-                group.groupId.value,
+                group.id.value,
                 group.title.value,
                 group.members.map { it.value }.toTypedArray(),
                 group.meetups.map { it.value }.toTypedArray()
             )
         }.let { group.right() }
     } catch (e: UnableToExecuteStatementException) {
-        if(e.message?.let {  it.contains("duplicate key") && it.contains("pk_group") } == true)
+        if (e.message?.let { it.contains("duplicate key") && it.contains("pk_group") } == true)
             GroupAlreadyExists.left()
         else throw e
     }
@@ -64,8 +51,21 @@ class PostgresGroupRepository(private val jdbi: Jdbi) : GroupRepository {
                 group.title.value,
                 group.members.map { it.value }.toTypedArray(),
                 group.meetups.map { it.value }.toTypedArray(),
-                group.groupId.value
+                group.id.value
             )
         }
     }
 }
+
+private fun ResultSet.asGroup() =
+    Group.reconstitute(
+        groupId = GroupId(UUID.fromString(getString("id"))),
+        title = Title.reconstitute(getString("title")),
+        members = this.getArray("members")?.let {
+            (it.array as Array<UUID>).map(::UserId).toSet()
+        } ?: emptySet(),
+        meetups = this.getArray("meetups")?.let {
+            (it.array as Array<UUID>).map(::MeetupId).toSet()
+        } ?: emptySet()
+    )
+

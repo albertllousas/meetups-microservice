@@ -14,7 +14,7 @@ import arrow.core.right
 import java.util.UUID
 
 data class Group(
-    val groupId: GroupId,
+    val id: GroupId,
     val title: Title,
     val members: Set<UserId>,
     val meetups: Set<MeetupId>,

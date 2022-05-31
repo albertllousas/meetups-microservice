@@ -11,7 +11,10 @@ services with DDD and hexagonal architecture.
 Keywords: `Tactical DDD`, `microservice`, `kotlin`, `Hexagonal-Architecture`, `SOLID`, `Domain-Driven Design`, `functional-programming`,
 `Testing`, `Event-Driven Architecture`, `Domain-Events`, `Kafka`, `spring-boot`, `PostgreSQL`, `Transactional-outbox`
 
-Optimistic locking
+OPTIMISTIC LOCKING
+transactions
+Transactional Outbox
+
 Tech Stack: quarkus, exposed
 ponerlo en el de team management tb
 
@@ -104,6 +107,14 @@ usecase stateless, get explanation from bear
 NOT use hexa when
 
 ## What about queries?
+
+Options: 
+- read side
+- query handlers
+- Repos in controllers
+- Just another usecase
+
+
 
 ## Consistency Boundary
 

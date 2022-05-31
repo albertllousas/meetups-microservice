@@ -136,10 +136,10 @@ data class Meetup private constructor(
 @JvmInline
 value class MeetupId(val value: UUID)
 
-interface MeetupStatus {
-    object Upcoming : MeetupStatus
-    data class Cancelled(val reason: String) : MeetupStatus
-    data class Finished(val rating: Rating) : MeetupStatus
+sealed class MeetupStatus {
+    object Upcoming : MeetupStatus()
+    data class Cancelled(val reason: String) : MeetupStatus()
+    data class Finished(val rating: Rating) : MeetupStatus()
 }
 
 

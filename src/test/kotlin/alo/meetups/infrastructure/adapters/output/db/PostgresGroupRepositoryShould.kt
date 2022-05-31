@@ -16,8 +16,6 @@ import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import java.sql.ResultSet
-import java.util.UUID
 import java.util.UUID.*
 
 @Tag("integration")
@@ -37,7 +35,7 @@ class PostgresGroupRepositoryShould {
     fun `should find a group`() {
         val group = GroupBuilder.build(members = setOf(UserId(randomUUID()))).also(::insert)
 
-        val result = groupRepository.find(group.groupId)
+        val result = groupRepository.find(group.id)
 
         assertThat(result).isEqualTo(group.right())
     }
@@ -57,7 +55,7 @@ class PostgresGroupRepositoryShould {
 
         assertThat(result).isEqualTo(group.right())
         assertThat(
-            jdbi.open().createQuery("SELECT id FROM groups WHERE id=:id").bind(0, group.groupId)
+            jdbi.open().createQuery("SELECT id FROM groups WHERE id=:id").bind(0, group.id)
         ).isNotNull
     }
 
@@ -84,14 +82,14 @@ class PostgresGroupRepositoryShould {
 
         groupRepository.update(modifiedGroup)
 
-        assertThat(groupRepository.find(group.groupId)).isEqualTo(modifiedGroup.right())
+        assertThat(groupRepository.find(group.id)).isEqualTo(modifiedGroup.right())
     }
 
     private fun insert(group: Group) =
         jdbi.open().use {
             it.execute(
                 """ INSERT INTO groups (id, title, members, meetups) VALUES (?,?,?,?) """,
-                group.groupId.value,
+                group.id.value,
                 group.title.value,
                 group.members.map { it.value }.toTypedArray(),
                 group.meetups.map { it.value }.toTypedArray()
