@@ -17,6 +17,9 @@ object Versions {
     const val TESTCONTAINERS = "1.17.2"
     const val FLYWAY = "8.5.11"
     const val POSTGRES = "42.2.23"
+    const val FUEL = "2.3.1"
+    const val JDBI = "3.29.0"
+    const val WIREMOCK = "2.27.2"
 }
 repositories {
     google()
@@ -35,9 +38,11 @@ dependencies {
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-agroal")
     implementation("io.quarkus:quarkus-narayana-jta")
-    implementation("org.jdbi:jdbi3-core:3.29.0")
+    implementation("org.jdbi:jdbi3-core:${Versions.JDBI}")
     implementation("org.postgresql:postgresql:${Versions.POSTGRES}")
     implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
+    implementation("com.github.kittinunf.fuel:fuel:${Versions.FUEL}")
+    implementation("com.github.kittinunf.fuel:fuel-jackson:${Versions.FUEL}")
 
     testImplementation(group= "com.github.javafaker", name= "javafaker", version= Versions.FAKER) {
         exclude(group = "org.yaml")
@@ -51,6 +56,7 @@ dependencies {
     testImplementation(group =  "org.testcontainers", name = "testcontainers", version = Versions.TESTCONTAINERS)
     testImplementation(group =  "org.testcontainers", name = "kafka", version = Versions.TESTCONTAINERS)
     testImplementation("org.testcontainers:postgresql:${Versions.TESTCONTAINERS}")
+    testImplementation("com.github.tomakehurst:wiremock:${Versions.WIREMOCK}")
 }
 
 tasks.apply {

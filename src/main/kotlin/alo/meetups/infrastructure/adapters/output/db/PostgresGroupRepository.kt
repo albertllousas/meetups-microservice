@@ -57,6 +57,7 @@ class PostgresGroupRepository(private val jdbi: Jdbi) : GroupRepository {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 private fun ResultSet.asGroup() =
     Group.reconstitute(
         groupId = GroupId(UUID.fromString(getString("id"))),

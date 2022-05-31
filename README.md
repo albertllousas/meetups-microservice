@@ -15,7 +15,7 @@ OPTIMISTIC LOCKING
 transactions
 Transactional Outbox
 
-Tech Stack: quarkus, exposed
+Tech Stack: kotlin, quarkus, jdbi, fuel
 ponerlo en el de team management tb
 
 ## The problem to solve
