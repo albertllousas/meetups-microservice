@@ -11,13 +11,6 @@ services with DDD and hexagonal architecture.
 Keywords: `Tactical DDD`, `microservice`, `kotlin`, `Quarkus`, `Hexagonal-Architecture`, `SOLID`, `Domain-Driven Design`, `functional-programming`,
 `Testing`, `Event-Driven Architecture`, `Domain-Events`, `Kafka`, `PostgreSQL`, `Transactional-outbox`, `jdbi`
 
-OPTIMISTIC LOCKING
-transactions
-Transactional Outbox
-error handling: explanation
-errors
-
-
 ## The problem to solve
 
 To drive all the project, we need a problem to solve, in this case we will get inspiration on the famous [meetup](https://www.meetup.com/) platform.
@@ -74,6 +67,9 @@ infrastructure concerns such as persistence libraries, dtos from outside the dom
 
 ### The Meetup model
 
+Usually microservices are around one aggregate, but in this case the MS is going to handle two, potentially the service 
+could be split up if necessary: 
+
 <p align="center">
   <img width="800%" src="./img/meetup.png">
 </p>
@@ -90,7 +86,7 @@ would need to:
 
 - Expose entry-points to communicate with our domain, such as http, streams or grpc
 - Store our aggregates in a datastore
-- Call other services that we depend on
+- Call other services that we can depend on
 - Perform other side effects like write logs, send metrics or publish events
 
 That's when **we need an architectural style** to support these different concerns in a structured way and decouple our 
@@ -98,35 +94,14 @@ domain operations, right? take a look on the next section.
 
 ## Hexagonal architecture
 
-side effects
+[Hexagonal architecture](https://github.com/albertllousas/implementing-hexagonal-architecture) is an architectural style  
+that fits perfectly for domain isolation, hence, for DDD projects. 
 
-usecases
-reference the
-usecase stateless, get explanation from bear
+<p align="center">
+  <img width="800%" src="./img/hexa.png">
+</p>
 
-NOT use hexa when
-
-## What about queries?
-
-Options: 
-- read side
-- query handlers
-- Repos in controllers
-- Just another usecase
-
-
-
-## Consistency Boundary
-
-### Architectural shortcuts
-
-## Error handling strategy
-
-## Testing strategy
-
-Add minimal explanation from gdoc
-
-
+Hexagonal introduces a chassis for our app, a way by which we can organise our code and do a proper separation of concerns.
 
 ### Package structure
 
@@ -134,20 +109,13 @@ Add minimal explanation from gdoc
 - Domain: Domain model and ports.
 - Infrastructure: Adapters, configuration and infrastructure code.
 
-### Architectural shortcuts
+## Events
 
-Even though the project follows hexagonal architecture, it also takes some shortcuts, breaking consciously
-some architectural constraints:
-
-- **Skipping incoming ports**: Incoming adapters are accessing application services directly.
-
-## Messaging patterns
+### Messaging patterns
 
 In order to avoid [dual writes](https://thorben-janssen.com/dual-writes/) the project uses a couple of patterns:
 - [transactional-outbox](https://microservices.io/patterns/data/transactional-outbox.html)
 - [polling-publisher](https://microservices.io/patterns/data/polling-publisher.html)
-
-## Events
 
 ### Domain events
 
@@ -155,9 +123,7 @@ A Domain-event is something that happened in the domain that is important to the
 
 This service advocates for asynchronous communication instead of exposing endpoints to be consumed by clients. To do so
 , since the service uses also domain-driven design tactical patterns, all use-cases are producing domain-events:
-- [Team Created](/src/main/kotlin/com/teammgmt/domain/model/DomainEvents.kt)
-- [Team Member Joined](/src/main/kotlin/com/teammgmt/domain/model/DomainEvents.kt)
-- [Team Member Left](/src/main/kotlin/com/teammgmt/domain/model/DomainEvents.kt)
+[Domain events](/src/main/kotlin/alo/meetups/domain/model/DomainEvents.kt)
 
 ### Integration events
 
@@ -169,9 +135,35 @@ Why not to publish our domain events directly? We can not publish our domain eve
 - Different schema for messages: In almost all the companies using event-driven these messages are defined in a different schema such as avro, protobuf or json schema.
 - We don't want to publish all domain-events: Sometimes we don't want to publish to our consumers all our internal domain events.
 
-Here the [contracts](/src/main/kotlin/com/teammgmt/infrastructure/adapters/outbound/event/IntegrationTeamEvents.kt)
+Here the [contracts](/src/main/kotlin/alo/meetups/infrastructure/adapters/output/pubsub/IntegrationTeamEvents.kt)
+
+## Resources
+
+- [Vaughn Vernon about designing aggregates](https://www.dddcommunity.org/library/vernon_2011/)
 
 
+
+
+
+
+### What about queries?
+
+Options:
+- read side
+- query handlers
+- Repos in controllers
+- Just another usecase
+
+
+
+## Consistency Boundary
+
+
+## Error handling strategy
+
+## Testing strategy
+
+Add minimal explanation from gdoc
 
 Add everything
 
@@ -183,7 +175,6 @@ https://stackoverflow.com/questions/31574819/ddd-and-aggregate-transaction-bound
 
 FC / IS
 
-## Resources
-
-- [Vaughn Vernon about designing aggregates](https://www.dddcommunity.org/library/vernon_2011/)
-
+OPTIMISTIC LOCKING
+error handling: explanation
+errors

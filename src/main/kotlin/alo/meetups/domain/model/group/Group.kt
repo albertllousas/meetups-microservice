@@ -17,7 +17,7 @@ data class Group(
     val id: GroupId,
     val title: Title,
     val members: Set<UserId>,
-    val meetups: Set<MeetupId>,
+    val meetups: Set<MeetupId>
 ) {
     companion object {
         fun create(id: UUID, title: String): Either<TooLongTitle, Group> =
