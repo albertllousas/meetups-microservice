@@ -14,6 +14,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager.TestInjector
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager.TestInjector.MatchesType
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
+import io.restassured.http.ContentType.*
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.BeforeEach
@@ -85,7 +86,7 @@ abstract class BaseComponentTest {
         val meetupId = UUID.randomUUID()
         val on = ZonedDateTime.now().plusDays(1)
         RestAssured.given()
-            .contentType(ContentType.JSON)
+            .contentType(JSON)
             .body("""
                {
                     "id": "$meetupId",
@@ -105,18 +106,48 @@ abstract class BaseComponentTest {
         return meetupId
     }
 
-    protected fun givenAMeetupIsFinished(meetupId: UUID) =
+    protected fun givenAGroupExists(): UUID {
+        val groupId = UUID.randomUUID()
+        RestAssured.given()
+            .contentType(JSON)
+            .body("""
+               {
+                    "id": "$groupId",
+                    "title": "Hiking"
+               }
+            """)
+            .`when`()
+            .post("/groups")
+            .then()
+            .statusCode(201)
+        return groupId
+    }
+
+    protected fun givenAMeetupIsFinished(meetupId: UUID): Unit {
         RestAssured.given()
             .`when`()
             .patch("/meetups/$meetupId/finish")
             .then()
             .statusCode(204)
+    }
+
+    protected fun givenAMemberInAGroupExists(groupId: UUID): UUID {
+        val memberId = UUID.randomUUID()
+        RestAssured.given()
+            .contentType(JSON)
+            .body(""" { "member_id": "$memberId" } """)
+            .`when`()
+            .post("/groups/$groupId/members")
+            .then()
+            .statusCode(201)
+        return memberId
+    }
 
     protected fun givenAnAttendantToAMeetup(meetupId: UUID): UUID {
         val attendantId = UUID.randomUUID()
         RestAssured.given()
             .`when`()
-            .contentType(ContentType.JSON)
+            .contentType(JSON)
             .body(""" { "attendant_id": "$attendantId"} """)
             .post("/meetups/$meetupId/attendants")
             .then()

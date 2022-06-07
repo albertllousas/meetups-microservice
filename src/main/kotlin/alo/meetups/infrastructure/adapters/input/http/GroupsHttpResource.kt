@@ -8,6 +8,7 @@ import alo.meetups.application.services.group.JoinGroup
 import alo.meetups.application.services.group.JoinGroupRequest
 import alo.meetups.application.services.group.LeaveGroup
 import alo.meetups.application.services.group.LeaveGroupRequest
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.jboss.resteasy.reactive.RestResponse
 import org.jboss.resteasy.reactive.RestResponse.created
 import org.jboss.resteasy.reactive.RestResponse.noContent
@@ -52,6 +53,6 @@ class GroupsHttpResource(
 
 data class CreateGroupHttpRequest(val id: UUID, val title: String)
 
-data class IncludeMeetupHttpRequest(val meetupId: UUID)
+data class IncludeMeetupHttpRequest(@get:JsonProperty("meetup_id") val meetupId: UUID)
 
-data class JoinGroupHttpRequest(val memberId: UUID)
+data class JoinGroupHttpRequest(@get:JsonProperty("member_id") val memberId: UUID)
