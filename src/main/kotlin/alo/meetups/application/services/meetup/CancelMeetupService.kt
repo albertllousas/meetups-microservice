@@ -1,5 +1,6 @@
 package alo.meetups.application.services.meetup
 
+import alo.meetups.application.services.UseCase
 import alo.meetups.domain.model.CancelMeetupError
 import alo.meetups.domain.model.MeetupEvent
 import alo.meetups.domain.model.PublishEvent
@@ -9,12 +10,14 @@ import arrow.core.Either
 import arrow.core.flatMap
 import java.util.UUID
 
+typealias CancelMeetup = UseCase<CancelMeetupRequest, CancelMeetupError, Unit>
+
 class CancelMeetupService(
     private val meetupRepository: MeetupRepository,
     private val publishEvent: PublishEvent,
-) {
+) : CancelMeetup {
 
-    operator fun invoke(request: CancelMeetupRequest): Either<CancelMeetupError, Unit> =
+    override operator fun invoke(request: CancelMeetupRequest): Either<CancelMeetupError, Unit> =
         meetupRepository.find(MeetupId(request.id))
             .flatMap { it.cancel(request.reason) }
             .tap(meetupRepository::update)

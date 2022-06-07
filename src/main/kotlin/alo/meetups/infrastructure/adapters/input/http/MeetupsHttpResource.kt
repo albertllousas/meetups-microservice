@@ -1,23 +1,25 @@
 package alo.meetups.infrastructure.adapters.input.http
 
+import alo.meetups.application.services.meetup.AttendMeetup
 import alo.meetups.application.services.meetup.AttendMeetupRequest
-import alo.meetups.application.services.meetup.AttendMeetupService
+import alo.meetups.application.services.meetup.CancelMeetup
 import alo.meetups.application.services.meetup.CancelMeetupRequest
-import alo.meetups.application.services.meetup.CancelMeetupService
+import alo.meetups.application.services.meetup.CreateMeetup
 import alo.meetups.application.services.meetup.CreateMeetupRequest
 import alo.meetups.application.services.meetup.CreateMeetupRequest.Type.InPerson
 import alo.meetups.application.services.meetup.CreateMeetupRequest.Type.Online
-import alo.meetups.application.services.meetup.CreateMeetupService
+import alo.meetups.application.services.meetup.FinishMeetup
 import alo.meetups.application.services.meetup.FinishMeetupRequest
-import alo.meetups.application.services.meetup.FinishMeetupService
+import alo.meetups.application.services.meetup.RateMeetup
 import alo.meetups.application.services.meetup.RateMeetupRequest
-import alo.meetups.application.services.meetup.RateMeetupService
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.JsonMappingException
 import org.jboss.resteasy.reactive.RestResponse
 import org.jboss.resteasy.reactive.RestResponse.created
 import org.jboss.resteasy.reactive.RestResponse.noContent
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 import java.net.URI
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -25,14 +27,15 @@ import javax.ws.rs.PATCH
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
+import javax.ws.rs.core.Response
 
 @Path("/meetups")
 class MeetupsHttpResource(
-    private val createMeetup: CreateMeetupService,
-    private val cancelMeetup: CancelMeetupService,
-    private val finishMeetup: FinishMeetupService,
-    private val rateMeetup: RateMeetupService,
-    private val attendMeetup: AttendMeetupService,
+    private val createMeetup: CreateMeetup,
+    private val cancelMeetup: CancelMeetup,
+    private val finishMeetup: FinishMeetup,
+    private val rateMeetup: RateMeetup,
+    private val attendMeetup: AttendMeetup,
 ) {
 
     @POST
@@ -88,7 +91,7 @@ class MeetupsHttpResource(
 )
 sealed class CreateMeetupHttpRequest(
     open val id: UUID,
-    @JsonProperty("host_id")
+    @get:JsonProperty("host_id")
     open val hostId: UUID,
     open val topic: String,
     open val details: String,
@@ -100,7 +103,7 @@ sealed class CreateMeetupHttpRequest(
         override val topic: String,
         override val details: String,
         override val on: ZonedDateTime,
-        @JsonProperty("link_name")
+        @get:JsonProperty("link_name")
         val linkName: String,
         val url: String,
     ) : CreateMeetupHttpRequest(id, hostId, topic, details, on)

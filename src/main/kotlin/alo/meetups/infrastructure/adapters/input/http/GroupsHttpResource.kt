@@ -1,13 +1,13 @@
 package alo.meetups.infrastructure.adapters.input.http
 
+import alo.meetups.application.services.group.CreateGroup
 import alo.meetups.application.services.group.CreateGroupRequest
-import alo.meetups.application.services.group.CreateGroupService
+import alo.meetups.application.services.group.IncludeMeetup
 import alo.meetups.application.services.group.IncludeMeetupRequest
-import alo.meetups.application.services.group.IncludeMeetupService
+import alo.meetups.application.services.group.JoinGroup
 import alo.meetups.application.services.group.JoinGroupRequest
-import alo.meetups.application.services.group.JoinGroupService
+import alo.meetups.application.services.group.LeaveGroup
 import alo.meetups.application.services.group.LeaveGroupRequest
-import alo.meetups.application.services.group.LeaveGroupService
 import org.jboss.resteasy.reactive.RestResponse
 import org.jboss.resteasy.reactive.RestResponse.created
 import org.jboss.resteasy.reactive.RestResponse.noContent
@@ -20,10 +20,10 @@ import javax.ws.rs.PathParam
 
 @Path("/groups")
 class GroupsHttpResource(
-    private val createGroup: CreateGroupService,
-    private val includeMeetup: IncludeMeetupService,
-    private val joinGroup: JoinGroupService,
-    private val leaveGroup: LeaveGroupService,
+    private val createGroup: CreateGroup,
+    private val includeMeetup: IncludeMeetup,
+    private val joinGroup: JoinGroup,
+    private val leaveGroup: LeaveGroup,
 ) {
 
     @POST

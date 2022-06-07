@@ -1,4 +1,4 @@
-CREATE TABLE public.groups (
+CREATE TABLE groups (
     id      UUID        NOT NULL,
     title   TEXT        NOT NULL,
     members UUID[]      ,
@@ -7,7 +7,7 @@ CREATE TABLE public.groups (
     CONSTRAINT pk_group PRIMARY KEY (id)
 );
 
-CREATE TABLE public.meetups (
+CREATE TABLE meetups (
    id           UUID                NOT NULL,
    topic        TEXT                NOT NULL,
    details      TEXT                NOT NULL,
@@ -27,16 +27,16 @@ CREATE TABLE public.meetups (
    CONSTRAINT pk_meetup PRIMARY KEY (id)
 );
 
--- CREATE TABLE public.outbox
--- (
---     id            UUID PRIMARY KEY,
---     aggregate_id  UUID                     NOT NULL,
---     event_payload BYTEA                    NOT NULL,
---     stream        TEXT                     NOT NULL,
---     created       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
--- );
---
---
+CREATE TABLE outbox
+(
+    id            UUID PRIMARY KEY,
+    aggregate_id  UUID                     NOT NULL,
+    event_payload BYTEA                    NOT NULL,
+    stream        TEXT                     NOT NULL,
+    created       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+
 -- CREATE TABLE public.people_replication
 -- (
 --     id         UUID        NOT NULL,

@@ -4,9 +4,9 @@ import alo.meetups.domain.model.Email
 import alo.meetups.domain.model.User
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
-import alo.meetups.fixtures.stubHttpEnpointForFindUserNonSucceeded
-import alo.meetups.fixtures.stubHttpEnpointForFindUserNotFound
-import alo.meetups.fixtures.stubHttpEnpointForFindUserSucceeded
+import alo.meetups.fixtures.stubHttpEndpointForFindUserNonSucceeded
+import alo.meetups.fixtures.stubHttpEndpointForFindUserNotFound
+import alo.meetups.fixtures.stubHttpEndpointForFindUserSucceeded
 import arrow.core.left
 import arrow.core.right
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -27,7 +27,7 @@ class UsersHttpClientShould {
     @Test
     fun `find a user`() {
         val userId = UUID.randomUUID()
-        usersExternalService.stubHttpEnpointForFindUserSucceeded(userId = userId)
+        usersExternalService.stubHttpEndpointForFindUserSucceeded(userId = userId)
 
         val result = findUser(UserId(userId))
 
@@ -37,7 +37,7 @@ class UsersHttpClientShould {
     @Test
     fun `fail when user does not exists`() {
         val userId = UUID.randomUUID()
-        usersExternalService.stubHttpEnpointForFindUserNotFound(userId)
+        usersExternalService.stubHttpEndpointForFindUserNotFound(userId)
 
         val result = findUser(UserId(userId))
 
@@ -47,7 +47,7 @@ class UsersHttpClientShould {
     @Test
     fun `crash when there is a non successful http response`() {
         val userId = UUID.randomUUID()
-        usersExternalService.stubHttpEnpointForFindUserNonSucceeded(userId)
+        usersExternalService.stubHttpEndpointForFindUserNonSucceeded(userId)
 
         assertThatThrownBy { findUser(UserId(userId)) }.isExactlyInstanceOf(HttpClientFailureException::class.java)
     }

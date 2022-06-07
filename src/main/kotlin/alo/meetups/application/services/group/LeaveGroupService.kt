@@ -1,8 +1,8 @@
 package alo.meetups.application.services.group
 
+import alo.meetups.application.services.UseCase
 import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.GroupEvent
-import alo.meetups.domain.model.JoinGroupError
 import alo.meetups.domain.model.LeaveGroupError
 import alo.meetups.domain.model.PublishEvent
 import alo.meetups.domain.model.UserId
@@ -13,13 +13,15 @@ import arrow.core.flatMap
 import arrow.core.zip
 import java.util.UUID
 
+typealias LeaveGroup = UseCase<LeaveGroupRequest, LeaveGroupError, Unit>
+
 class LeaveGroupService(
     private val findUser: FindUser,
     private val groupRepository: GroupRepository,
     private val publishEvent: PublishEvent,
-) {
+) : LeaveGroup {
 
-    operator fun invoke(request: LeaveGroupRequest): Either<LeaveGroupError, Unit> =
+    override operator fun invoke(request: LeaveGroupRequest): Either<LeaveGroupError, Unit> =
         findUser(UserId(request.newMemberId))
             .zip(groupRepository.find(GroupId(request.groupId)))
             .flatMap { (newMember, group) -> group.leave(newMember) }

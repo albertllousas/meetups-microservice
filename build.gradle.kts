@@ -1,6 +1,7 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.5.0"
     id("io.quarkus") version "2.9.1.Final"
+    id ("org.jetbrains.kotlin.plugin.allopen") version "1.5.0"
 }
 
 group = "alo.meetup"
@@ -20,6 +21,7 @@ object Versions {
     const val FUEL = "2.3.1"
     const val JDBI = "3.29.0"
     const val WIREMOCK = "2.27.2"
+    const val MICROMETER = "1.9.0"
 }
 repositories {
     google()
@@ -37,12 +39,17 @@ dependencies {
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-agroal")
+    implementation("io.quarkus:quarkus-jdbc-postgresql")
+    implementation("io.quarkus:quarkus-micrometer")
     implementation("io.quarkus:quarkus-narayana-jta")
+    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("org.jdbi:jdbi3-core:${Versions.JDBI}")
     implementation("org.postgresql:postgresql:${Versions.POSTGRES}")
     implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
     implementation("com.github.kittinunf.fuel:fuel:${Versions.FUEL}")
     implementation("com.github.kittinunf.fuel:fuel-jackson:${Versions.FUEL}")
+    implementation("io.micrometer:micrometer-registry-datadog:${Versions.MICROMETER}")
+
 
     testImplementation(group= "com.github.javafaker", name= "javafaker", version= Versions.FAKER) {
         exclude(group = "org.yaml")
@@ -57,6 +64,13 @@ dependencies {
     testImplementation(group =  "org.testcontainers", name = "kafka", version = Versions.TESTCONTAINERS)
     testImplementation("org.testcontainers:postgresql:${Versions.TESTCONTAINERS}")
     testImplementation("com.github.tomakehurst:wiremock:${Versions.WIREMOCK}")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+}
+
+allOpen {
+    annotation("javax.ws.rs.Path")
+    annotation("javax.enterprise.context.ApplicationScoped")
+    annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
 tasks.apply {

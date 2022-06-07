@@ -1,5 +1,6 @@
 package alo.meetups.application.services.meetup
 
+import alo.meetups.application.services.UseCase
 import alo.meetups.domain.model.FinishMeetupError
 import alo.meetups.domain.model.MeetupEvent
 import alo.meetups.domain.model.PublishEvent
@@ -9,12 +10,14 @@ import arrow.core.Either
 import arrow.core.flatMap
 import java.util.UUID
 
+typealias FinishMeetup = UseCase<FinishMeetupRequest, FinishMeetupError, Unit>
+
 class FinishMeetupService(
     private val meetupRepository: MeetupRepository,
     private val publishEvent: PublishEvent,
-) {
+) : FinishMeetup {
 
-    operator fun invoke(request: FinishMeetupRequest): Either<FinishMeetupError, Unit> =
+    override operator fun invoke(request: FinishMeetupRequest): Either<FinishMeetupError, Unit> =
         meetupRepository.find(MeetupId(request.id))
             .flatMap { it.finish() }
             .tap(meetupRepository::update)

@@ -1,0 +1,36 @@
+kafka:
+  bootstrap:
+    servers: localhost:9092
+
+mp:
+  messaging:
+    outgoing:
+      groups-out:
+        connector: smallrye-kafka
+        topic: groups
+        health-readiness-enabled: true
+        value:
+          serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      meetups-out:
+        connector: smallrye-kafka
+        topic: meetups
+        health-readiness-enabled: true
+        value:
+          serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+
+quarkus:
+  kafka:
+    health:
+      enabled: true
+  datasource:
+    db-kind: postgresql
+    username: ${DB.USERNAME:meetups}
+    password: ${DB.PASSWORD:meetups}
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/meetups
+      max-size: 16
+#      validation-query-sql: SELECT 1
+
+clients:
+  users-service:
+    url: https://users-service.service.consul

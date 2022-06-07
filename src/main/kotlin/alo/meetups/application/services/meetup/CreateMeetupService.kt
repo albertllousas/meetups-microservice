@@ -1,11 +1,13 @@
 package alo.meetups.application.services.meetup
 
+import alo.meetups.application.services.UseCase
 import alo.meetups.application.services.meetup.CreateMeetupRequest.Type.InPerson
 import alo.meetups.application.services.meetup.CreateMeetupRequest.Type.Online
 import alo.meetups.domain.model.CreateMeetupError
 import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.MeetupEvent.MeetupCreated
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.User
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.meetup.Meetup
@@ -16,19 +18,23 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import java.util.UUID
 
+typealias CreateMeetup = UseCase<CreateMeetupRequest, CreateMeetupError, Unit>
+
 class CreateMeetupService(
     private val findUser: FindUser,
     private val meetupRepository: MeetupRepository,
     private val publishEvent: PublishEvent,
+    private val transactional: Transactional,
     private val clock: Clock,
-) {
+) : CreateMeetup {
 
-    operator fun invoke(request: CreateMeetupRequest): Either<CreateMeetupError, Unit> =
+    override operator fun invoke(request: CreateMeetupRequest): Either<CreateMeetupError, Unit> = transactional {
         findUser(UserId(request.hostId))
             .flatMap { host: User -> createMeetup(request, host) }
             .flatMap(meetupRepository::create)
             .map(::MeetupCreated)
             .map(publishEvent::invoke)
+    }
 
     private fun createMeetup(request: CreateMeetupRequest, host: User) =
         with(request) {

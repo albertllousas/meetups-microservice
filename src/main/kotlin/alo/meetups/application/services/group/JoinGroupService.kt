@@ -1,5 +1,6 @@
 package alo.meetups.application.services.group
 
+import alo.meetups.application.services.UseCase
 import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.GroupEvent
 import alo.meetups.domain.model.JoinGroupError
@@ -12,13 +13,15 @@ import arrow.core.flatMap
 import arrow.core.zip
 import java.util.UUID
 
+typealias JoinGroup = UseCase<JoinGroupRequest, JoinGroupError, Unit>
+
 class JoinGroupService(
     private val findUser: FindUser,
     private val groupRepository: GroupRepository,
     private val publishEvent: PublishEvent,
-) {
+) : JoinGroup {
 
-    operator fun invoke(request: JoinGroupRequest): Either<JoinGroupError, Unit> =
+    override operator fun invoke(request: JoinGroupRequest): Either<JoinGroupError, Unit> =
         findUser(UserId(request.newMemberId))
             .zip(groupRepository.find(GroupId(request.groupId)))
             .flatMap { (newMember, group) -> group.join(newMember) }

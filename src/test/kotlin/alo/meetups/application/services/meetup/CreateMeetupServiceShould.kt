@@ -7,6 +7,7 @@ import alo.meetups.domain.model.MeetupAlreadyExists
 import alo.meetups.domain.model.MeetupEvent.MeetupCreated
 import alo.meetups.domain.model.PublishEvent
 import alo.meetups.domain.model.TooLongTopic
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
 import alo.meetups.domain.model.meetup.Address
@@ -40,8 +41,12 @@ class CreateMeetupServiceShould {
 
     private val clock = Clock.fixed(Instant.parse("2018-08-19T16:45:42.00Z"), ZoneId.of("UTC"))
 
+    val transactional: Transactional = object : Transactional {
+        override fun <T> invoke(transactionalBlock: () -> T): T = transactionalBlock()
+    }
+
     private val createOnlineMeetup = CreateMeetupService(
-        findUser, meetupRepository, publishEvent, clock
+        findUser, meetupRepository, publishEvent, transactional, clock
     )
 
     @Test

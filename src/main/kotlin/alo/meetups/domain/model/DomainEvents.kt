@@ -7,20 +7,30 @@ import alo.meetups.domain.model.meetup.MeetupId
 sealed interface DomainEvent
 
 sealed class MeetupEvent: DomainEvent {
-    data class MeetupCreated(val meetup: Meetup): MeetupEvent()
-    data class MeetupCancelled(val meetup: Meetup): MeetupEvent()
-    data class MeetupFinished(val meetup: Meetup): MeetupEvent()
-    data class AttendantAdded(val meetup: Meetup, val newAttendant: UserId): MeetupEvent()
-    data class MeetupRated(val meetup: Meetup,val attendant: UserId, val score: Int): MeetupEvent()
+
+    abstract val meetup: Meetup
+
+    data class MeetupCreated(override val meetup: Meetup): MeetupEvent()
+    data class MeetupCancelled(override val meetup: Meetup): MeetupEvent()
+    data class MeetupFinished(override val meetup: Meetup): MeetupEvent()
+    data class AttendantAdded(override val meetup: Meetup, val newAttendant: UserId): MeetupEvent()
+    data class MeetupRated(override val meetup: Meetup,val attendant: UserId, val score: Int): MeetupEvent()
 }
 
 sealed class GroupEvent: DomainEvent {
-    data class GroupCreated(val group: Group): MeetupEvent()
-    data class MeetupIncluded(val group: Group, val meetupId: MeetupId): MeetupEvent()
-    data class MemberJoined(val group: Group, val memberId: UserId): MeetupEvent()
-    data class MemberLeft(val group: Group, val memberId: UserId): MeetupEvent()
+
+    abstract val group: Group
+
+    data class GroupCreated(override val group: Group): GroupEvent()
+    data class MeetupIncluded(override val group: Group, val meetupId: MeetupId): GroupEvent()
+    data class MemberJoined(override val group: Group, val memberId: UserId): GroupEvent()
+    data class MemberLeft(override val group: Group, val memberId: UserId): GroupEvent()
 }
 
 interface PublishEvent {
+    operator fun invoke(domainEvent: DomainEvent)
+}
+
+interface HandleEvent {
     operator fun invoke(domainEvent: DomainEvent)
 }
