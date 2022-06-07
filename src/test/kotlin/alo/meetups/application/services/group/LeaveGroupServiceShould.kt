@@ -5,16 +5,19 @@ import alo.meetups.domain.model.GroupEvent
 import alo.meetups.domain.model.GroupNotFound
 import alo.meetups.domain.model.MemberWasNotPartOfTheGroup
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
 import alo.meetups.domain.model.group.GroupId
 import alo.meetups.domain.model.group.GroupRepository
 import alo.meetups.fixtures.GroupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import alo.meetups.fixtures.UserBuilder
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -29,7 +32,9 @@ class LeaveGroupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val leaveGroup = LeaveGroupService(findUser, groupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val leaveGroup = LeaveGroupService(findUser, groupRepository, publishEvent, transactional)
 
     @Test
     fun `leave a group as a member`() {
@@ -43,8 +48,11 @@ class LeaveGroupServiceShould {
         val result = leaveGroup(LeaveGroupRequest(groupId.value, memberId.value))
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { groupRepository.update(group.copy(members = emptySet())) }
-        verify { publishEvent(GroupEvent.MemberLeft(group.copy(members = emptySet()), memberId = memberId)) }
+        verify {
+            groupRepository.update(group.copy(members = emptySet()))
+            publishEvent(GroupEvent.MemberLeft(group.copy(members = emptySet()), memberId = memberId))
+            transactional(any())
+        }
     }
 
     @Test

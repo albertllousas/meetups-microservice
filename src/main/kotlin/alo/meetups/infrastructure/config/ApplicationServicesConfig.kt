@@ -62,48 +62,48 @@ class ApplicationServicesConfig {
     @Produces
     @ApplicationScoped
     fun attendMeetupService(): AttendMeetup = useCaseDecorator.decorate(
-        AttendMeetupService(findUser, meetupRepository, publishEvent, clock)
+        AttendMeetupService(findUser, meetupRepository, publishEvent, transactional, clock)
     )
 
     @Produces
     @ApplicationScoped
     fun cancelMeetupService(): CancelMeetup = useCaseDecorator.decorate(
-        CancelMeetupService(meetupRepository, publishEvent)
+        CancelMeetupService(meetupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun finishMeetupService(): FinishMeetup = useCaseDecorator.decorate(
-        FinishMeetupService(meetupRepository, publishEvent)
+        FinishMeetupService(meetupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun rateMeetupService(): RateMeetup = useCaseDecorator.decorate(
-        RateMeetupService(findUser, meetupRepository, publishEvent)
+        RateMeetupService(findUser, meetupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun createGroupService(): CreateGroup = useCaseDecorator.decorate(
-        CreateGroupService(groupRepository, publishEvent)
+        CreateGroupService(groupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun includeMeetupService(): IncludeMeetup = useCaseDecorator.decorate(
-        IncludeMeetupService(groupRepository, meetupRepository, publishEvent)
+        IncludeMeetupService(groupRepository, meetupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun joinGroupService(): JoinGroup = useCaseDecorator.decorate(
-        JoinGroupService(findUser, groupRepository, publishEvent)
+        JoinGroupService(findUser, groupRepository, publishEvent, transactional)
     )
 
     @Produces
     @ApplicationScoped
     fun leaveGroupService(): LeaveGroup = useCaseDecorator.decorate(
-        LeaveGroupService(findUser, groupRepository, publishEvent)
+        LeaveGroupService(findUser, groupRepository, publishEvent, transactional)
     )
 }

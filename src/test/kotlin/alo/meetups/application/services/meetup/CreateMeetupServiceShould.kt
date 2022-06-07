@@ -14,12 +14,14 @@ import alo.meetups.domain.model.meetup.Address
 import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.domain.model.meetup.MeetupType
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import alo.meetups.fixtures.UserBuilder
 import arrow.core.left
 import arrow.core.right
 import com.github.javafaker.Faker
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -41,9 +43,7 @@ class CreateMeetupServiceShould {
 
     private val clock = Clock.fixed(Instant.parse("2018-08-19T16:45:42.00Z"), ZoneId.of("UTC"))
 
-    val transactional: Transactional = object : Transactional {
-        override fun <T> invoke(transactionalBlock: () -> T): T = transactionalBlock()
-    }
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
 
     private val createOnlineMeetup = CreateMeetupService(
         findUser, meetupRepository, publishEvent, transactional, clock
@@ -67,7 +67,10 @@ class CreateMeetupServiceShould {
         val result = createOnlineMeetup(request)
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { publishEvent(ofType(MeetupCreated::class)) }
+        verify {
+            publishEvent(ofType(MeetupCreated::class))
+            transactional(any())
+        }
     }
 
     @Test

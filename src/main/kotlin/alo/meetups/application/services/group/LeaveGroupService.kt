@@ -5,6 +5,7 @@ import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.GroupEvent
 import alo.meetups.domain.model.LeaveGroupError
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.group.GroupId
 import alo.meetups.domain.model.group.GroupRepository
@@ -19,15 +20,17 @@ class LeaveGroupService(
     private val findUser: FindUser,
     private val groupRepository: GroupRepository,
     private val publishEvent: PublishEvent,
+    private val transactional: Transactional,
 ) : LeaveGroup {
 
-    override operator fun invoke(request: LeaveGroupRequest): Either<LeaveGroupError, Unit> =
+    override operator fun invoke(request: LeaveGroupRequest): Either<LeaveGroupError, Unit> = transactional {
         findUser(UserId(request.newMemberId))
             .zip(groupRepository.find(GroupId(request.groupId)))
             .flatMap { (newMember, group) -> group.leave(newMember) }
             .tap(groupRepository::update)
             .map { GroupEvent.MemberLeft(it, UserId(request.newMemberId)) }
             .map { publishEvent(it) }
+    }
 }
 
 data class LeaveGroupRequest(val groupId: UUID, val newMemberId: UUID)

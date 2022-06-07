@@ -12,7 +12,10 @@ class Kafka {
         .also { createTopics(it) }
 
     private fun createTopics(kafka: KafkaContainer) =
-        listOf(NewTopic("public.team.v1", 1, 1))
+        listOf(
+            NewTopic("meetups", 1, 1),
+            NewTopic("groups", 1, 1)
+        )
             .let {
                 AdminClient
                     .create(mapOf(Pair(BOOTSTRAP_SERVERS_CONFIG, kafka.bootstrapServers)))

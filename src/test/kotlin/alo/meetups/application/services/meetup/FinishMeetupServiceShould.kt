@@ -4,15 +4,18 @@ import alo.meetups.domain.model.MeetupEvent.MeetupFinished
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.OnlyUpcomingMeetupsCanBeFinished
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.domain.model.meetup.MeetupStatus.Finished
 import alo.meetups.domain.model.meetup.Rating
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -24,7 +27,9 @@ class FinishMeetupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val finishMeetup = FinishMeetupService(meetupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val finishMeetup = FinishMeetupService(meetupRepository, publishEvent, transactional)
 
     @Test
     fun `finish a meetup`() {
@@ -36,7 +41,10 @@ class FinishMeetupServiceShould {
         val result = finishMeetup(request)
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { publishEvent(ofType(MeetupFinished::class)) }
+        verify {
+            publishEvent(ofType(MeetupFinished::class))
+            transactional(any())
+        }
     }
 
     @Test

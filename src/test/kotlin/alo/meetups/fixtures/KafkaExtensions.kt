@@ -4,6 +4,7 @@ import io.smallrye.reactive.messaging.kafka.KafkaConnectorOutgoingConfiguration
 import io.smallrye.reactive.messaging.kafka.impl.ConfigHelper
 import io.smallrye.reactive.messaging.kafka.impl.ReactiveKafkaProducer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -12,6 +13,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import java.lang.Thread.sleep
 import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.TimeUnit.*
@@ -51,15 +53,16 @@ fun <K, V> KafkaConsumer<K, V>.consumeAndAssert(
     assertions(events.first())
 }
 
-suspend fun <K, V> KafkaConsumer<K, V>.consumeAndAssertMultiple(
+fun <K, V> KafkaConsumer<K, V>.consumeAndAssertMultiple(
     numberOfMessages: Int = 1,
     stream: String,
-    delay: Long = 3000L,
+    timeout: Long = 3000L,
+    delay: Long = 1000L,
     assertions: (List<ConsumerRecord<K, V>>) -> Unit
 ) {
     this.subscribe(listOf(stream))
-    delay(delay)
-    val events = this.poll(Duration.ofMillis(delay)).records(stream).toList()
+    runBlocking { sleep(delay) }
+    val events = this.poll(Duration.ofMillis(timeout)).records(stream).toList()
     this.commitAsync()
     if (events.count() != numberOfMessages)
         throw Exception("Expected to consume '$numberOfMessages' record but '${events.count()}' were present.")

@@ -68,7 +68,7 @@ class MeetupsHttpResource(
     @POST
     @Path("/{meetupId}/attendants")
     fun attend(@PathParam("meetupId") meetupId: UUID, request: AttendMeetupHttpRequest): RestResponse<Unit> =
-        attendMeetup(AttendMeetupRequest(meetupId, request.attendantId))
+        attendMeetup(AttendMeetupRequest(request.attendantId, meetupId))
             .fold(ifLeft = { it.toRestResponse() }, ifRight = { created(URI.create("/meetups/$meetupId")) })
 
     @PATCH
@@ -123,7 +123,7 @@ data class CreateMeetupHttpResponse(val id: UUID)
 
 data class CancelMeetupHttpRequest(val reason: String)
 
-data class RateMeetupHttpRequest(val attendantId: UUID, val score: Int)
+data class RateMeetupHttpRequest(@JsonProperty("attendant_id") val attendantId: UUID, val score: Int)
 
-data class AttendMeetupHttpRequest(val attendantId: UUID)
+data class AttendMeetupHttpRequest(@JsonProperty("attendant_id") val attendantId: UUID)
 

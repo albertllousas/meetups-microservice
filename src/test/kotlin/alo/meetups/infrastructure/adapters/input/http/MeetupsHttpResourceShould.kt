@@ -28,7 +28,7 @@ import java.util.UUID
  * Since quarkus is not providing a way to do integration test on controllers/resources in isolation (@QuarkusTest loads
  * the whole app context), unit test are performed instead.
  */
-class MeetupsHttpControllerShould {
+class MeetupsHttpResourceShould {
 
     private val faker = Faker()
 
@@ -156,7 +156,7 @@ class MeetupsHttpControllerShould {
         fun `should attend to meeting`() {
             val meetupId = UUID.randomUUID()
             val attendantId = UUID.randomUUID()
-            every { attendMeetup(AttendMeetupRequest(meetupId, attendantId)) } returns Unit.right()
+            every { attendMeetup(AttendMeetupRequest(attendantId, meetupId)) } returns Unit.right()
 
             val response = meetupsHttpResource.attend(meetupId, AttendMeetupHttpRequest(attendantId))
 

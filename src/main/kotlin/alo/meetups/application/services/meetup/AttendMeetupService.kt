@@ -5,6 +5,7 @@ import alo.meetups.domain.model.AttendMeetupError
 import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.MeetupEvent.AttendantAdded
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
@@ -20,16 +21,18 @@ class AttendMeetupService(
     private val findUser: FindUser,
     private val meetupRepository: MeetupRepository,
     private val publishEvent: PublishEvent,
+    private val transactional: Transactional,
     private val clock: Clock,
 ) : AttendMeetup {
 
-    override operator fun invoke(request: AttendMeetupRequest): Either<AttendMeetupError, Unit> =
+    override operator fun invoke(request: AttendMeetupRequest): Either<AttendMeetupError, Unit> = transactional {
         findUser(UserId(request.attendantId))
             .zip(meetupRepository.find(MeetupId(request.meetupId)))
             .flatMap { (attendant, meetup) -> meetup.attend(attendant, clock) }
             .tap(meetupRepository::update)
             .map { AttendantAdded(it, UserId(request.attendantId)) }
             .map { publishEvent(it) }
+    }
 }
 
 data class AttendMeetupRequest(val attendantId: UUID, val meetupId: UUID)

@@ -75,6 +75,7 @@ allOpen {
 
 tasks.apply {
     test {
+        maxParallelForks = 1
         enableAssertions = true
         useJUnitPlatform {}
     }

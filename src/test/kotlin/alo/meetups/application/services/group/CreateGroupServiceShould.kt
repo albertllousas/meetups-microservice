@@ -4,15 +4,18 @@ import alo.meetups.domain.model.GroupAlreadyExists
 import alo.meetups.domain.model.GroupEvent.GroupCreated
 import alo.meetups.domain.model.PublishEvent
 import alo.meetups.domain.model.TooLongTitle
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.group.GroupId
 import alo.meetups.domain.model.group.GroupRepository
 import alo.meetups.domain.model.group.Title
 import alo.meetups.fixtures.GroupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import arrow.core.left
 import arrow.core.right
 import com.github.javafaker.Faker
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -26,7 +29,9 @@ class CreateGroupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val createGroup = CreateGroupService(groupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val createGroup = CreateGroupService(groupRepository, publishEvent, transactional)
 
     @Test
     fun `create an online meetup`() {
@@ -37,7 +42,10 @@ class CreateGroupServiceShould {
         val result = createGroup(request)
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { publishEvent(GroupCreated(group)) }
+        verify {
+            publishEvent(GroupCreated(group))
+            transactional(any())
+        }
     }
 
     @Test

@@ -5,16 +5,19 @@ import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.MeetupEvent.AttendantAdded
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import alo.meetups.fixtures.UserBuilder
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -33,7 +36,9 @@ class AttendMeetupServiceShould {
 
     private val clock = Clock.fixed(Instant.parse("2018-08-19T16:45:42.00Z"), ZoneId.of("UTC"))
 
-    private val attendMeetup = AttendMeetupService(findUser, meetupRepository, publishEvent, clock)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val attendMeetup = AttendMeetupService(findUser, meetupRepository, publishEvent, transactional, clock)
 
     @Test
     fun `add an attendant to a meetup`() {
@@ -47,8 +52,11 @@ class AttendMeetupServiceShould {
         val result = attendMeetup(AttendMeetupRequest(userId.value, meetupId.value))
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { meetupRepository.update(meetup.copy(attendees = setOf(attendant.userId))) }
-        verify { publishEvent(AttendantAdded(meetup.copy(attendees = setOf(attendant.userId)), userId)) }
+        verify {
+            meetupRepository.update(meetup.copy(attendees = setOf(attendant.userId)))
+            publishEvent(AttendantAdded(meetup.copy(attendees = setOf(attendant.userId)), userId))
+            transactional(any())
+        }
     }
 
     @Test

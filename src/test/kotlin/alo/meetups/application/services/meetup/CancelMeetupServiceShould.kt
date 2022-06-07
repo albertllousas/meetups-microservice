@@ -4,15 +4,18 @@ import alo.meetups.domain.model.MeetupEvent
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.OnlyUpcomingMeetupsCanBeCancelled
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.domain.model.meetup.MeetupStatus
 import alo.meetups.domain.model.meetup.Rating
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -24,7 +27,9 @@ class CancelMeetupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val cancelMeetup = CancelMeetupService(meetupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val cancelMeetup = CancelMeetupService(meetupRepository, publishEvent, transactional)
 
     @Test
     fun `cancel a meetup`() {
@@ -39,8 +44,11 @@ class CancelMeetupServiceShould {
         val result = cancelMeetup(request)
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { meetupRepository.update(any()) }
-        verify { publishEvent(ofType(MeetupEvent.MeetupCancelled::class)) }
+        verify {
+            meetupRepository.update(any())
+            publishEvent(ofType(MeetupEvent.MeetupCancelled::class))
+            transactional(any())
+        }
     }
 
     @Test

@@ -19,4 +19,4 @@ class Postgres {
         }
 }
 
-class KtPostgreSQLContainer : PostgreSQLContainer<KtPostgreSQLContainer>("postgres:13.4")
+class KtPostgreSQLContainer : PostgreSQLContainer<KtPostgreSQLContainer>("postgres:latest")

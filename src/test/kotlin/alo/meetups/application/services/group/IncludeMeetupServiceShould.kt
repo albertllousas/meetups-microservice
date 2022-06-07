@@ -5,16 +5,19 @@ import alo.meetups.domain.model.GroupEvent.MeetupIncluded
 import alo.meetups.domain.model.GroupNotFound
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.group.GroupId
 import alo.meetups.domain.model.group.GroupRepository
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.fixtures.GroupBuilder
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -28,7 +31,9 @@ class IncludeMeetupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val includeMeetup = IncludeMeetupService(groupRepository, meetupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val includeMeetup = IncludeMeetupService(groupRepository, meetupRepository, publishEvent, transactional)
 
     @Test
     fun `add an attendant to a meetup`() {
@@ -42,8 +47,11 @@ class IncludeMeetupServiceShould {
         val result = includeMeetup(IncludeMeetupRequest(groupId.value, meetupId.value))
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { groupRepository.update(group.copy(meetups = setOf(meetup.id))) }
-        verify { publishEvent(MeetupIncluded(group.copy(meetups = setOf(meetup.id)), meetupId)) }
+        verify {
+            groupRepository.update(group.copy(meetups = setOf(meetup.id)))
+            publishEvent(MeetupIncluded(group.copy(meetups = setOf(meetup.id)), meetupId))
+            transactional(any())
+        }
     }
 
     @Test

@@ -21,13 +21,15 @@ class PollingPublisher(
 ) {
 
     init {
-        Timer().schedule(timerTask { publish() }, 100, pollingIntervalMs)
+        Timer().schedule(timerTask { this@PollingPublisher.publish() }, 100, pollingIntervalMs)
     }
 
     private fun publish() =
         try {
             userTransaction.begin()
-            transactionalOutbox.findReadyForPublishing(batchSize).also(messageRelay::send)
+            transactionalOutbox.findReadyForPublishing(batchSize)
+                .also(messageRelay::send)
+                .onEach { event -> logger.info("Aggregate-id: '${event.aggregateId}' event published to the stream '${event.stream}'") }
             userTransaction.commit()
         } catch (exception: Exception) {
             userTransaction.rollback()

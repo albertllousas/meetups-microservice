@@ -5,6 +5,7 @@ import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.MeetupEvent.MeetupRated
 import alo.meetups.domain.model.PublishEvent
 import alo.meetups.domain.model.RateMeetupError
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupRepository
@@ -19,15 +20,17 @@ class RateMeetupService(
     private val findUser: FindUser,
     private val meetupRepository: MeetupRepository,
     private val publishEvent: PublishEvent,
+    private val transactional: Transactional,
 ): RateMeetup {
 
-    override operator fun invoke(request: RateMeetupRequest): Either<RateMeetupError, Unit> =
+    override operator fun invoke(request: RateMeetupRequest): Either<RateMeetupError, Unit> = transactional {
         findUser(UserId(request.attendantId))
             .zip(meetupRepository.find(MeetupId(request.meetupId)))
             .flatMap { (attendant, meetup) -> meetup.rate(request.score, attendant) }
             .tap(meetupRepository::update)
             .map { MeetupRated(it, UserId(request.attendantId), request.score) }
             .map { publishEvent(it) }
+    }
 }
 
 data class RateMeetupRequest(val meetupId: UUID, val attendantId: UUID, val score: Int)

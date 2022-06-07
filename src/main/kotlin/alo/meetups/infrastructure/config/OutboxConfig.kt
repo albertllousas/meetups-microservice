@@ -7,6 +7,7 @@ import alo.meetups.infrastructure.outbox.PostgresOutboxEventRepository
 import alo.meetups.infrastructure.outbox.TransactionalOutbox
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MeterRegistry
+import io.quarkus.runtime.Startup
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jdbi.v3.core.Jdbi
@@ -53,29 +54,21 @@ class TransactionalOutboxConfig {
     fun transactionalOutbox(): TransactionalOutbox = PostgresOutboxEventRepository(jdbi, clock)
 }
 
-@ApplicationScoped
-class PollingPublisherConfig {
-
-    @Inject
-    lateinit var kafkaProducer: KafkaProducer<String, ByteArray>
-
-    @Inject
-    lateinit var transactionalOutbox: TransactionalOutbox
-
-    @Inject
-    lateinit var userTransaction: UserTransaction
-
-    @Inject
-    lateinit var meterRegistry: MeterRegistry
-
-    @Produces
-    @ApplicationScoped
-    fun pollingPublisher() = PollingPublisher(
-        transactionalOutbox = transactionalOutbox,
-        messageRelay = MessageRelay(kafkaProducer),
-        batchSize = 10,
-        userTransaction = userTransaction,
-        pollingIntervalMs = 1000,
-        meterRegistry = meterRegistry
-    )
+@Startup
+class EagerPollingPublisherStarter(
+    kafkaProducer: KafkaProducer<String, ByteArray>,
+    transactionalOutbox: TransactionalOutbox,
+    userTransaction: UserTransaction,
+    meterRegistry: MeterRegistry,
+) {
+    init {
+        PollingPublisher(
+            transactionalOutbox = transactionalOutbox,
+            messageRelay = MessageRelay(kafkaProducer),
+            batchSize = 10,
+            userTransaction = userTransaction,
+            pollingIntervalMs = 1000,
+            meterRegistry = meterRegistry
+        )
+    }
 }

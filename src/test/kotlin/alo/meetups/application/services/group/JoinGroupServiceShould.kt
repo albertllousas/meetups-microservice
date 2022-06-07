@@ -5,16 +5,19 @@ import alo.meetups.domain.model.FindUser
 import alo.meetups.domain.model.GroupEvent
 import alo.meetups.domain.model.GroupNotFound
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
 import alo.meetups.domain.model.group.GroupId
 import alo.meetups.domain.model.group.GroupRepository
 import alo.meetups.fixtures.GroupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import alo.meetups.fixtures.UserBuilder
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -28,7 +31,9 @@ class JoinGroupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val joinGroup = JoinGroupService(findUser, groupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val joinGroup = JoinGroupService(findUser, groupRepository, publishEvent, transactional)
 
     @Test
     fun `join a group as a new member`() {
@@ -42,8 +47,11 @@ class JoinGroupServiceShould {
         val result = joinGroup(JoinGroupRequest(groupId.value, memberId.value))
 
         assertThat(result).isEqualTo(Unit.right())
-        verify { groupRepository.update(group.copy(members = setOf(memberId))) }
-        verify { publishEvent(GroupEvent.MemberJoined(group.copy(members = setOf(memberId)), memberId = memberId)) }
+        verify {
+            groupRepository.update(group.copy(members = setOf(memberId)))
+            publishEvent(GroupEvent.MemberJoined(group.copy(members = setOf(memberId)), memberId = memberId))
+            transactional(any())
+        }
     }
 
     @Test

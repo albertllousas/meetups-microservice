@@ -5,6 +5,7 @@ import alo.meetups.domain.model.MeetupEvent.MeetupRated
 import alo.meetups.domain.model.MeetupNotFinishedYet
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.PublishEvent
+import alo.meetups.domain.model.Transactional
 import alo.meetups.domain.model.UserId
 import alo.meetups.domain.model.UserNotFound
 import alo.meetups.domain.model.meetup.MeetupId
@@ -12,11 +13,13 @@ import alo.meetups.domain.model.meetup.MeetupRepository
 import alo.meetups.domain.model.meetup.MeetupStatus.Finished
 import alo.meetups.domain.model.meetup.Rating
 import alo.meetups.fixtures.MeetupBuilder
+import alo.meetups.fixtures.TransactionalForTesting
 import alo.meetups.fixtures.UserBuilder
 import arrow.core.left
 import arrow.core.right
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -30,7 +33,9 @@ class RateMeetupServiceShould {
 
     private val publishEvent = mockk<PublishEvent>(relaxed = true)
 
-    private val rateMeetup = RateMeetupService(findUser, meetupRepository, publishEvent)
+    private val transactional = spyk<Transactional>(TransactionalForTesting())
+
+    private val rateMeetup = RateMeetupService(findUser, meetupRepository, publishEvent, transactional)
 
     @Test
     fun `rate a meetup`() {
@@ -53,6 +58,7 @@ class RateMeetupServiceShould {
                     score = 3
                 )
             )
+            transactional(any())
         }
     }
 
