@@ -72,11 +72,11 @@ Usually microservices are around one aggregate, but in this case the MS is going
 could be split up if necessary: 
 
 <p align="center">
-  <img width="800%" src="./img/meetup.png">
+  <img width="80%" src="./img/meetup.png">
 </p>
 
 <p align="center">
-  <img width="800%" src="./img/group.png">
+  <img width="80%" src="./img/group.png">
 </p>
 
 > Wait ... where are commands, domain events and repositories? Or even more, what about other external dependencies like 
@@ -98,8 +98,10 @@ domain operations, right? take a look on the next section.
 [Hexagonal architecture](https://github.com/albertllousas/implementing-hexagonal-architecture) is an architectural style  
 that fits perfectly for domain isolation, hence, for DDD projects. 
 
+Here an example of how a simple business use-case looks like:
+
 <p align="center">
-  <img width="800%" src="./img/hexa.png">
+  <img width="80%" src="./img/hexa.png">
 </p>
 
 Hexagonal introduces a chassis for our app, a way by which we can organise our code and do a proper separation of concerns.
