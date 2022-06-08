@@ -32,7 +32,7 @@ In addition, this project will use **Hexagonal Architecture** as an architectura
 ## Building blocks
 
 <p align="center">
-  <img width="800%" src="./img/tactical-ddd-patterns.png">
+  <img width="80%" src="./img/tactical-ddd-patterns.png">
 </p>
 
 - [**Aggregates**](https://martinfowler.com/bliki/DDD_Aggregate.html) are a cluster of objects that acts as a single unit, each aggregate has: 
@@ -101,7 +101,7 @@ that fits perfectly for domain isolation, hence, for DDD projects.
 Here an example of how a simple business use-case looks like:
 
 <p align="center">
-  <img width="80%" src="img/usecase.png">
+  <img width="100%" src="img/usecase.png">
 </p>
 
 Hexagonal introduces a chassis for our app, a way by which we can organise our code and do a proper separation of concerns.
