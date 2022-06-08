@@ -31,11 +31,12 @@ class PostgresGroupRepository(private val jdbi: Jdbi) : GroupRepository {
     override fun create(group: Group): Either<GroupAlreadyExists, Group> = try {
         jdbi.open().use { handle ->
             handle.execute(
-                """ INSERT INTO groups (id, title, members, meetups) VALUES (?,?,?,?) """,
+                """ INSERT INTO groups (id, title, members, meetups, aggregate_version) VALUES (?,?,?,?,?) """,
                 group.id.value,
                 group.title.value,
                 group.members.map { it.value }.toTypedArray(),
-                group.meetups.map { it.value }.toTypedArray()
+                group.meetups.map { it.value }.toTypedArray(),
+                group.aggregateVersion
             )
         }.let { group.right() }
     } catch (e: UnableToExecuteStatementException) {
@@ -44,15 +45,26 @@ class PostgresGroupRepository(private val jdbi: Jdbi) : GroupRepository {
         else throw e
     }
 
+    @Throws(OptimisticLockException::class)
     override fun update(group: Group) {
+        val groupToSave = group.copy(aggregateVersion = group.aggregateVersion.inc())
         jdbi.open().use { handle ->
-            handle.execute(
-                """ UPDATE groups SET title = ?, members = ?, meetups= ? WHERE id = ? """,
-                group.title.value,
-                group.members.map { it.value }.toTypedArray(),
-                group.meetups.map { it.value }.toTypedArray(),
-                group.id.value
-            )
+            handle.useTransaction<OptimisticLockException> {
+                handle.createQuery(
+                    """ UPDATE groups 
+                    SET title = ?, members = ?, meetups= ?, aggregate_version = aggregate_version + 1 
+                    WHERE id = ? RETURNING aggregate_version""")
+                    .bind(0, groupToSave.title.value)
+                    .bind(1, groupToSave.members.map { it.value }.toTypedArray())
+                    .bind(2, groupToSave.meetups.map { it.value }.toTypedArray())
+                    .bind(3, groupToSave.id.value)
+                    .mapTo(Long::class.java)
+                    .one()
+                    .also { version ->
+                        if (version != groupToSave.aggregateVersion)
+                            throw OptimisticLockException(group.id.value, "group")
+                    }
+            }
         }
     }
 }
@@ -67,6 +79,7 @@ private fun ResultSet.asGroup() =
         } ?: emptySet(),
         meetups = this.getArray("meetups")?.let {
             (it.array as Array<UUID>).map(::MeetupId).toSet()
-        } ?: emptySet()
+        } ?: emptySet(),
+        aggregateVersion = this.getLong("aggregate_version")
     )
 

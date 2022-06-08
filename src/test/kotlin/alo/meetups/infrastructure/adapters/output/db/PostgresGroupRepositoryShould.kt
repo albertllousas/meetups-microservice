@@ -12,11 +12,12 @@ import alo.meetups.fixtures.GroupBuilder
 import arrow.core.left
 import arrow.core.right
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import java.util.UUID.*
+import java.util.UUID.randomUUID
 
 @Tag("integration")
 class PostgresGroupRepositoryShould {
@@ -82,17 +83,35 @@ class PostgresGroupRepositoryShould {
 
         groupRepository.update(modifiedGroup)
 
-        assertThat(groupRepository.find(group.id)).isEqualTo(modifiedGroup.right())
+        assertThat(groupRepository.find(group.id)).isEqualTo(modifiedGroup.copy(aggregateVersion = 1).right())
+    }
+
+    @Test
+    fun `should fail updating a group when there is a concurrent saving (saving an outdated version)`() {
+        val group = GroupBuilder.build(
+            members = setOf(UserId(randomUUID())),
+            meetups = setOf(MeetupId(randomUUID())),
+            aggregateVersion = 10
+        ).also(::insert)
+        val modifiedGroup = group.copy(
+            title = Title.reconstitute("modified"),
+            members = setOf(UserId(randomUUID())),
+            meetups = setOf(MeetupId(randomUUID())),
+            aggregateVersion = 0
+        )
+
+        assertThatThrownBy { groupRepository.update(modifiedGroup) }.isInstanceOf(OptimisticLockException::class.java)
     }
 
     private fun insert(group: Group) =
-        jdbi.open().use {
-            it.execute(
-                """ INSERT INTO groups (id, title, members, meetups) VALUES (?,?,?,?) """,
+        jdbi.open().use { handle ->
+            handle.execute(
+                """ INSERT INTO groups (id, title, members, meetups, aggregate_version) VALUES (?,?,?,?,?) """,
                 group.id.value,
                 group.title.value,
                 group.members.map { it.value }.toTypedArray(),
-                group.meetups.map { it.value }.toTypedArray()
+                group.meetups.map { it.value }.toTypedArray(),
+                group.aggregateVersion
             )
         }
 }

@@ -17,15 +17,16 @@ data class Group(
     val id: GroupId,
     val title: Title,
     val members: Set<UserId>,
-    val meetups: Set<MeetupId>
+    val meetups: Set<MeetupId>,
+    val aggregateVersion: Long
 ) {
     companion object {
         fun create(id: UUID, title: String): Either<TooLongTitle, Group> =
             Title.create(title)
-                .map { Group(GroupId(id), it, emptySet(), emptySet()) }
+                .map { Group(GroupId(id), it, emptySet(), emptySet(), 0) }
 
-        fun reconstitute(groupId: GroupId, title: Title, members: Set<UserId>, meetups: Set<MeetupId>): Group =
-            Group(groupId, title, members, meetups)
+        fun reconstitute(groupId: GroupId, title: Title, members: Set<UserId>, meetups: Set<MeetupId>, aggregateVersion: Long): Group =
+            Group(groupId, title, members, meetups, aggregateVersion)
     }
 
     fun join(newMember: User): Either<AlreadyJoined, Group> =

@@ -68,7 +68,8 @@ class MeetupShould {
                     on = on,
                     groupId = null,
                     type = MeetupType.InPerson(Address(address)),
-                    attendees = emptySet()
+                    attendees = emptySet(),
+                    aggregateVersion = 0
                 ).right()
             )
         }
@@ -102,7 +103,8 @@ class MeetupShould {
                     on = on,
                     groupId = null,
                     type = MeetupType.Online(Link.reconstitute(linkName, url)),
-                    attendees = emptySet()
+                    attendees = emptySet(),
+                    aggregateVersion = 0
                 ).right()
             )
         }

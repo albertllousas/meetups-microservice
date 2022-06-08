@@ -1,4 +1,4 @@
-# Tactical DDD building blocks
+# Meetups microservice: Applying tactical DDD 
 
 ## Description
 
@@ -9,7 +9,7 @@ In addition to that, it brings a full tested and production ready microservice t
 services with DDD and hexagonal architecture.
 
 Keywords: `Tactical DDD`, `microservice`, `kotlin`, `Quarkus`, `Hexagonal-Architecture`, `SOLID`, `Domain-Driven Design`, `functional-programming`,
-`Testing`, `Event-Driven Architecture`, `Domain-Events`, `Kafka`, `PostgreSQL`, `Transactional-outbox`, `jdbi`
+`Testing`, `Event-Driven Architecture`, `Domain-Events`, `Kafka`, `PostgreSQL`, `Transactional-outbox`, `jdbi`, `optimistic-locking`
 
 ## The problem to solve
 
@@ -23,6 +23,7 @@ The basics are:
 - Once a meetup has finished, an attendant can rate it
 - Meetings can be part of a **group**
 - Groups could have members
+- Both group and meetups should have limitations on text sizes
 
 We will model these problems using DDD tactical patterns to structure our solution around the business.
 
@@ -105,9 +106,26 @@ Hexagonal introduces a chassis for our app, a way by which we can organise our c
 
 ### Package structure
 
-- Application: Application Services (the use cases)
+- Application: Application Services (the use cases of our app)
 - Domain: Domain model and ports.
 - Infrastructure: Adapters, configuration and infrastructure code.
+
+### Accessing to the meetups: Queries
+
+If you take a look in the application service layer you will see that there are no use-cases to access to the aggregates.
+This is done in purpose in order to:
+- Empower async microservices approach.
+- Separate writes (business operations on our aggregates) from reads (just projections/views of them).
+- Don't pollute our aggregates with view information at persistence level such as foreign keys or extra info to be queried.
+
+Our microservice is publishing events about all the lifecycle, if a **client** wants to get either a meetup or a group, they 
+**would need to subscribe to the stream and replicate the information**.
+
+Anyways, if for any reason you want to expose synchronous endpoints, there are several ways:
+- [CQRS](https://martinfowler.com/bliki/CQRS.html) way: create a separate project or module, listen to the events and create proper read models to be queried (views) 
+- Query handlers: Create query handlers, similar to use cases with a different meanings, just aggregate information and present views models
+- Access repositories in the controllers: Access repositories right away, is a view a business concern?
+- Just another use-case: treat queries/reads as another use-case more, keeping consistency in the project.
 
 ## Events
 
@@ -137,35 +155,17 @@ Why not to publish our domain events directly? We can not publish our domain eve
 
 Here the [contracts](/src/main/kotlin/alo/meetups/infrastructure/adapters/output/pubsub/IntegrationTeamEvents.kt)
 
+## Error Handling
+
+This project uses a mixed approach to handle with errors:
+- [Domain errors](src/main/kotlin/alo/meetups/domain/model/DomainErrors.kt): Domain errors are always returned for any meaningful error interesting for the consumer
+that they can recover from. Domain errors are wrapped using **Either monads**.
+- Exceptions: Let the application crash for uncontrolled errors such as framework exceptions, timeouts, sql exceptions or 
+any infrastructure error that the consumer can not recover from and deal with them at the boundary of the app.
+
 ## Resources
 
 - [Vaughn Vernon about designing aggregates](https://www.dddcommunity.org/library/vernon_2011/)
-
-
-
-
-
-
-### What about queries?
-
-Options:
-- read side
-- query handlers
-- Repos in controllers
-- Just another usecase
-
-
-
-## Consistency Boundary
-
-
-## Error handling strategy
-
-## Testing strategy
-
-Add minimal explanation from gdoc
-
-Add everything
 
 - https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR29yQqJqQEa3huLXAYyoRdVKMHfwxlJk5tPA&usqp=CA
 

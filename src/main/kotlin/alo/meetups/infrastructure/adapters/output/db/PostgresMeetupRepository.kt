@@ -21,7 +21,9 @@ import alo.meetups.infrastructure.adapters.toEither
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import java.sql.ResultSet
 import java.time.Instant
@@ -44,9 +46,9 @@ class PostgresMeetupRepository(private val jdbi: Jdbi) : MeetupRepository {
         jdbi.open().use { handle ->
             val params = meetup.asSQLParamsMap()
             handle.execute(
-                """ INSERT INTO Meetups (${params.keys.joinToString(",")}) 
-                    VALUES (${(1..params.size).joinToString(",") { "?" }}) """,
-                *params.values.toTypedArray()
+                """ INSERT INTO Meetups (${params.keys.joinToString(",")}, aggregate_version) 
+                    VALUES (${(1..params.size).joinToString(",") { "?" }},?)""",
+                *params.values.toTypedArray() + meetup.aggregateVersion
             )
         }.let { meetup.right() }
     } catch (e: UnableToExecuteStatementException) {
@@ -55,13 +57,25 @@ class PostgresMeetupRepository(private val jdbi: Jdbi) : MeetupRepository {
         else throw e
     }
 
+    @Throws(OptimisticLockException::class)
     override fun update(meetup: Meetup) {
+        val meetupToSave = meetup.copy(aggregateVersion = meetup.aggregateVersion.inc())
         jdbi.open().use { handle ->
-            val params = meetup.asSQLParamsMap()
-            handle.execute(
-                """ UPDATE meetups SET ${params.map { (k, _) -> "$k = ?" }.joinToString(",")} WHERE id = ? """,
-                *(params.values.toTypedArray() + meetup.id.value)
-            )
+            handle.useTransaction<OptimisticLockException> {
+                val params = meetupToSave.asSQLParamsMap()
+                handle.createQuery(
+                    """ UPDATE meetups SET ${params.map { (k, _) -> "$k = ?" }.joinToString(",")}
+                        , aggregate_version = aggregate_version + 1 
+                        WHERE id = ? RETURNING aggregate_version""")
+                    .also { query -> params.values.forEachIndexed { index, value -> query.bind(index, value) } }
+                    .bind((params.values.size), meetupToSave.id.value)
+                    .mapTo(Long::class.java)
+                    .one()
+                    .also { version ->
+                        if (version != meetupToSave.aggregateVersion)
+                            throw OptimisticLockException(meetup.id.value, "meetup")
+                    }
+            }
         }
     }
 }
@@ -103,7 +117,8 @@ private fun ResultSet.asMeetup() =
         attendees = getArray("attendees")?.let {
             (it.array as Array<UUID>).map(::UserId).toSet()
         } ?: emptySet(),
-        status = this.asMeetupStatus()
+        status = this.asMeetupStatus(),
+        aggregateVersion = this.getLong("aggregate_version")
     )
 
 private fun ResultSet.asMeetupStatus() = when (getString("status")) {

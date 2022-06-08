@@ -4,6 +4,7 @@ CREATE TABLE groups (
     members UUID[]      ,
     meetups UUID[]      ,
     created TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    aggregate_version BIGINT NOT NULL,
     CONSTRAINT pk_group PRIMARY KEY (id)
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE meetups (
    rating_stars DECIMAL             ,
    rating_votes INT                 ,
    created      TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+   aggregate_version BIGINT NOT NULL,
    CONSTRAINT pk_meetup PRIMARY KEY (id)
 );
 

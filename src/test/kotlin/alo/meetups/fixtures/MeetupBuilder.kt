@@ -47,6 +47,7 @@ object MeetupBuilder {
             Link.reconstitute(name = faker.company().name(), url = "http://${faker.company().url()}")
         ),
         attendees: Set<UserId> = emptySet(),
+        aggregateVersion: Long = 0
     ) = Meetup.reconstitute(
         id = id,
         hostedBy = hostedBy,
@@ -56,6 +57,7 @@ object MeetupBuilder {
         on = on,
         groupId = groupId,
         type = type,
-        attendees = attendees
+        attendees = attendees,
+        aggregateVersion
     )
 }

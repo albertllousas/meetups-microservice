@@ -30,7 +30,8 @@ class GroupShould {
                     groupId = GroupId(id),
                     title = Title.reconstitute("Cupcakes"),
                     meetups = emptySet(),
-                    members = emptySet()
+                    members = emptySet(),
+                    aggregateVersion = 0
                 ).right()
             )
         }

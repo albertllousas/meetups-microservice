@@ -17,5 +17,6 @@ object GroupBuilder {
         title: Title = Title.reconstitute(faker.book().title()),
         members: Set<UserId> = emptySet(),
         meetups: Set<MeetupId> = emptySet(),
-    ) = Group(id, title, members, meetups)
+        aggregateVersion: Long = 0
+    ) = Group(id, title, members, meetups, aggregateVersion)
 }

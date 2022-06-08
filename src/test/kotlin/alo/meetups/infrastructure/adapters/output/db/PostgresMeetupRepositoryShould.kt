@@ -4,6 +4,7 @@ import alo.meetups.Postgres
 import alo.meetups.domain.model.MeetupAlreadyExists
 import alo.meetups.domain.model.MeetupNotFound
 import alo.meetups.domain.model.UserId
+import alo.meetups.domain.model.group.Title
 import alo.meetups.domain.model.meetup.Meetup
 import alo.meetups.domain.model.meetup.MeetupId
 import alo.meetups.domain.model.meetup.MeetupStatus.Cancelled
@@ -11,10 +12,12 @@ import alo.meetups.domain.model.meetup.MeetupStatus.Finished
 import alo.meetups.domain.model.meetup.MeetupStatus.Upcoming
 import alo.meetups.domain.model.meetup.MeetupType.InPerson
 import alo.meetups.domain.model.meetup.MeetupType.Online
+import alo.meetups.fixtures.GroupBuilder
 import alo.meetups.fixtures.MeetupBuilder
 import arrow.core.left
 import arrow.core.right
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.*
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
@@ -84,7 +87,19 @@ class PostgresMeetupRepositoryShould {
 
         meetupRepository.update(modifiedMeetup)
 
-        assertThat(meetupRepository.find(meetup.id)).isEqualTo(modifiedMeetup.right())
+        assertThat(meetupRepository.find(meetup.id)).isEqualTo(modifiedMeetup.copy(aggregateVersion = 1).right())
+    }
+
+    @Test
+    fun `should fail updating a meetup when there is a concurrent saving (saving an outdated version)`() {
+        val meetup = MeetupBuilder.build(attendees = setOf(UserId(randomUUID())), aggregateVersion = 10).also(::insert)
+        val modifiedMeetup = MeetupBuilder.build(
+            on = ZonedDateTime.parse("2022-05-31T07:58:37.690Z"),
+            attendees = setOf(UserId(randomUUID())),
+            aggregateVersion = 0
+        ).copy(id = meetup.id)
+
+        assertThatThrownBy { meetupRepository.update(modifiedMeetup) }.isInstanceOf(OptimisticLockException::class.java)
     }
 
     private fun insert(meetup: Meetup) =
@@ -93,8 +108,8 @@ class PostgresMeetupRepositoryShould {
                 it.execute(
                     """ INSERT INTO meetups (
                     id, topic, details, hosted_by, on_date, group_id, attendees, meetup_type, link_name, link_url, address, 
-                    status, cancel_reason, rating_stars, rating_votes
-                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) """,
+                    status, cancel_reason, rating_stars, rating_votes, aggregate_version
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) """,
                     id.value,
                     topic.value,
                     details.value,
@@ -117,6 +132,7 @@ class PostgresMeetupRepositoryShould {
                     if (status is Cancelled) (status as Cancelled).reason else null,
                     if (status is Finished) (status as Finished).rating.stars else null,
                     if (status is Finished) (status as Finished).rating.votes else null,
+                    meetup.aggregateVersion
                 )
             }
         }

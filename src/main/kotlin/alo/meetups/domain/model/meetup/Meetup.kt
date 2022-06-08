@@ -36,6 +36,7 @@ data class Meetup private constructor(
     val groupId: GroupId?,
     val type: MeetupType,
     val attendees: Set<UserId>,
+    val aggregateVersion: Long
 ) {
     companion object {
 
@@ -84,7 +85,8 @@ data class Meetup private constructor(
                         on = zdt,
                         groupId = null,
                         type = type,
-                        attendees = emptySet()
+                        attendees = emptySet(),
+                        aggregateVersion = 0
                     )
                 }
 
@@ -105,7 +107,8 @@ data class Meetup private constructor(
             groupId: GroupId?,
             type: MeetupType,
             attendees: Set<UserId>,
-        ): Meetup = Meetup(id, hostedBy, status, topic, details, on, groupId, type, attendees)
+            aggregateVersion: Long
+        ): Meetup = Meetup(id, hostedBy, status, topic, details, on, groupId, type, attendees, aggregateVersion)
     }
 
     fun cancel(reason: String): Either<OnlyUpcomingMeetupsCanBeCancelled, Meetup> =
