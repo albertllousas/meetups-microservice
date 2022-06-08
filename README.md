@@ -158,7 +158,7 @@ Here the [contracts](/src/main/kotlin/alo/meetups/infrastructure/adapters/output
 
 ## Error Handling
 
-This project uses a mixed approach to handle with errors:
+This project uses a mixed approach to handle errors:
 - [Domain errors](src/main/kotlin/alo/meetups/domain/model/DomainErrors.kt): Domain errors are always returned for any meaningful error interesting for the consumer
 that they can recover from. Domain errors are wrapped using **Either monads**.
 - Exceptions: Let the application crash for uncontrolled errors such as framework exceptions, timeouts, sql exceptions or 
