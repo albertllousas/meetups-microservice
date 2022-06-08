@@ -95,8 +95,7 @@ domain operations, right? take a look on the next section.
 
 ## Hexagonal architecture
 
-[Hexagonal architecture](https://github.com/albertllousas/implementing-hexagonal-architecture) is an architectural style  
-that fits perfectly for domain isolation, hence, for DDD projects. 
+[Hexagonal architecture](https://github.com/albertllousas/implementing-hexagonal-architecture) is an architectural style that fits perfectly for domain isolation, hence, for DDD projects. 
 
 Here an example of how a simple business use-case looks like:
 
