@@ -72,11 +72,11 @@ Usually microservices are around one aggregate, but in this case the MS is going
 could be split up if necessary: 
 
 <p align="center">
-  <img width="80%" src="./img/meetup.png">
+  <img width="70%" src="./img/meetup.png">
 </p>
 
 <p align="center">
-  <img width="80%" src="./img/group.png">
+  <img width="70%" src="./img/group.png">
 </p>
 
 > Wait ... where are commands, domain events and repositories? Or even more, what about other external dependencies like 
@@ -101,7 +101,7 @@ that fits perfectly for domain isolation, hence, for DDD projects.
 Here an example of how a simple business use-case looks like:
 
 <p align="center">
-  <img width="80%" src="./img/hexa.png">
+  <img width="80%" src="img/usecase.png">
 </p>
 
 Hexagonal introduces a chassis for our app, a way by which we can organise our code and do a proper separation of concerns.
@@ -167,16 +167,11 @@ any infrastructure error that the consumer can not recover from and deal with th
 
 ## Resources
 
+- [Domain-Driven Design Distilled](https://www.oreilly.com/library/view/domain-driven-design-distilled/9780134434964/)
+- [Domain Modeling Made Functional](https://pragprog.com/titles/swdddf/domain-modeling-made-functional/)
 - [Vaughn Vernon about designing aggregates](https://www.dddcommunity.org/library/vernon_2011/)
-
-- https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR29yQqJqQEa3huLXAYyoRdVKMHfwxlJk5tPA&usqp=CA
-
-https://www.jamesmichaelhickey.com/consistency-boundary/
-
-https://stackoverflow.com/questions/31574819/ddd-and-aggregate-transaction-boundary
-
-FC / IS
-
-OPTIMISTIC LOCKING
-error handling: explanation
-errors
+- [Hexagonal Architecture](https://github.com/albertllousas/implementing-hexagonal-architecture)
+- [Hexagonal Book, by Tom Hombergs](https://reflectoring.io/book/)
+- [CQRS](https://martinfowler.com/bliki/CQRS.html)
+- [Dependency Inversion](https://github.com/albertllousas/dependency-inversion-principle-explained)
+- [A little architecture, Robert C. Martin, January 2016](https://blog.cleancoder.com/uncle-bob/2016/01/04/ALittleArchitecture.html)
