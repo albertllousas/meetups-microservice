@@ -13,7 +13,7 @@ Keywords: `Tactical DDD`, `microservice`, `kotlin`, `Quarkus`, `Hexagonal-Archit
 
 ## The problem to solve
 
-To drive all the project, we need a problem to solve, in this case we will get inspiration on the famous [meetup](https://www.meetup.com/) platform.
+To drive all the project, we need a problem to solve, in this case we will get inspiration from the famous [meetup](https://www.meetup.com/) platform.
 
 The basics are:
 - As a host, I should be able to create a **Meetup** to talk about some topic at some date in the future
@@ -25,7 +25,7 @@ The basics are:
 - Groups could have members
 - Both group and meetups should have limitations on text sizes
 
-We will model these problems using DDD tactical patterns to structure our solution around the business.
+We will model these business constraints using DDD tactical patterns to structure our solution around the business.
 
 In addition, this project will use **Hexagonal Architecture** as an architectural style and **functional programming principles**.
 
