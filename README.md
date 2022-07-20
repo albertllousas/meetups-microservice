@@ -35,20 +35,21 @@ In addition, this project will use **Hexagonal Architecture** as an architectura
   <img width="80%" src="./img/tactical-ddd-patterns.png">
 </p>
 
-- [**Aggregates**](https://martinfowler.com/bliki/DDD_Aggregate.html) are a cluster of objects that acts as a single unit, each aggregate has: 
+- [**Aggregates**](https://martinfowler.com/bliki/DDD_Aggregate.html) are clusters of objects that act as a single unit, each aggregate has: 
   - Root: single entity that follow some rules such as:
     - All business operations should go through it
-    - As the name suggest, is in the root of the objects tree, therefore it should control the access to its child
+    - As the name suggest, it is in the root of the objects tree, therefore it should control the access to its child
     - Keeps everything inside in a consistent state ensuring the integrity of their invariants
     - Is the basic element of data storage, either you load or save it as a whole 
   - Boundary: that defines what is inside and:
-    - Has a global identity, the root, and any entity inside has a local identity
+    - Has a global identity, defined in the root
     - Nothing outside the aggregate boundary can hold a reference to anything inside, except for the aggregate root
     - Objects inside the boundary could hold references to other aggregates, preferable weak references (ids)
     
-- **Entities** are objects defined is defined by their identity, independently of the value of their properties. Usually,
+- **Entities** are objects defined by their identity, independently of the value of their properties. Usually,
     their state could change during their lifecycle. For example, a Person, it could be identified by their doc id, but they 
     will change during their life in many ways.
+  - Entities usually have a local identity.
 - [**Value Objects**](https://martinfowler.com/bliki/ValueObject.html) are immutable types and their equality is defined 
     by all their properties together. Examples of VO could be a Currency, Address or UserId.
     A subset of Values objects are called:
